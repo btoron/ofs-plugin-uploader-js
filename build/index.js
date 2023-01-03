@@ -25,7 +25,6 @@ y.command({
                 const pluginObj = new PluginDescription();
                 pluginObj.content = data;
                 pluginObj.label = argv.label;
-                process.stdout.write(pluginObj.xml);
                 var myOFS = new OFS(JSON.parse(readFileSync(argv.credentials).toString()));
                 myOFS.importPlugins(undefined, pluginObj.xml).then((result) => {
                     process.stdout.write(JSON.stringify(result));
