@@ -34,7 +34,6 @@ y.command({
                 const pluginObj: PluginDescription = new PluginDescription();
                 pluginObj.content = data;
                 pluginObj.label = argv.label;
-                process.stdout.write(pluginObj.xml);
                 var myOFS = new OFS(
                     JSON.parse(readFileSync(argv.credentials).toString())
                 );
