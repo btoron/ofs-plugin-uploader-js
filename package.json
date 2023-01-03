@@ -1,0 +1,31 @@
+{
+  "name": "@ofs-users/plugin-manager",
+  "version": "1.0.0",
+  "description": "OFS Plugin Uploader CLI",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": [
+    "ofs",
+    "plugin",
+    "upload"
+  ],
+  "bin": {
+    "pluginmgr": "build/index.js"
+  },
+  "author": "borja.toron@gmail.com",
+  "license": "ISC",
+  "dependencies": {
+    "@ofs-users/proxy": "^1.0.0",
+    "xml-js": "^1.6.11",
+    "yargs": "^17.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "@types/yargs": "^17.0.18",
+    "typescript": "^4.9.4"
+  }
+}
