@@ -14,7 +14,7 @@
     "upload"
   ],
   "bin": {
-    "pluginmgr": "build/index.js"
+    "pluginmgr": "dist/index.js"
   },
   "author": "borja.toron@gmail.com",
   "license": "ISC",
