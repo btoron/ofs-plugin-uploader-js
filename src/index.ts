@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 
 import { OFS } from "@ofs-users/proxy";
-import { existsSync, readFile, readFileSync } from "fs";
+import {
+    existsSync,
+    readFile,
+    readFileSync,
+    writeFile,
+    writeFileSync,
+} from "fs";
 import yargs, { ArgumentsCamelCase } from "yargs";
 import { hideBin } from "yargs/helpers";
 import { PluginDescription } from "./descriptor.js";
@@ -22,6 +28,14 @@ y.command({
             type: "string",
             default: "plugin.zip",
         },
+        save: {
+            type: "boolean",
+            default: true,
+        },
+        savefile: {
+            type: "string",
+            default: "plugin.xml",
+        },
         credentials: {
             type: "string",
             default: "credentials.json",
@@ -40,6 +54,9 @@ y.command({
                 myOFS.importPlugins(undefined, pluginObj.xml).then((result) => {
                     process.stdout.write(JSON.stringify(result));
                 });
+                if (argv.save && argv.savefile) {
+                    writeFileSync(argv.savefile as string, pluginObj.xml);
+                }
             });
         } else {
             process.stderr.write(`${argv.filename} not found`);
