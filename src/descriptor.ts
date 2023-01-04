@@ -19,7 +19,7 @@ export class PluginDescription {
                     label: "label",
                     action_label: "",
                     action_entity: "",
-                    action_type: " addon_action",
+                    action_type: "addon_action",
                     type: "addon",
                 },
                 translations: {
