@@ -17,9 +17,9 @@ export class PluginDescription {
                 plugin: {
                     _attributes: {
                         label: "label",
-                        action_label: "",
-                        action_entity: "",
-                        action_type: "addon_action",
+                        action_label: "action_label",
+                        action_entity: "action_entity",
+                        action_type: " addon_action",
                         type: "addon",
                     },
                     translations: {
@@ -30,8 +30,6 @@ export class PluginDescription {
                             },
                         },
                     },
-                    fields: {},
-                    secured_params: {},
                     plugin_data: {
                         plugin_data_item: {
                             _attributes: {
