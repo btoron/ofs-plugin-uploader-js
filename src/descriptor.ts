@@ -2,6 +2,7 @@ import { createHash } from "crypto";
 import { json2xml } from "xml-js";
 
 export class PluginDescription {
+    _declaration = { _attributes: { version: "1.0", encoding: "utf-8" } };
     root = {
         format: {
             _attributes: {
@@ -50,7 +51,7 @@ export class PluginDescription {
                                 content_hash: "hash",
                             },
                             content: {
-                                _text: "NONE",
+                                _cdata: "NONE",
                             },
                         },
                     },
@@ -62,7 +63,7 @@ export class PluginDescription {
     set content(buffer: Buffer) {
         var hash = createHash("sha256");
         hash.update(buffer);
-        this.root.plugins.plugin.plugin_data.plugin_data_item.hosted_plugin_data.content._text =
+        this.root.plugins.plugin.plugin_data.plugin_data_item.hosted_plugin_data.content._cdata =
             buffer.toString("base64");
         this.root.plugins.plugin.plugin_data.plugin_data_item.hosted_plugin_data._attributes.content_hash =
             hash.digest("hex");
