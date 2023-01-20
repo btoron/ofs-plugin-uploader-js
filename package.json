@@ -1,6 +1,6 @@
 {
   "name": "@ofs-users/plugin-manager",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "OFS Plugin Uploader CLI",
   "main": "index.js",
   "type": "module",
