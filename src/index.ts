@@ -16,6 +16,7 @@ type Options = {
     label: string;
     filename: string | undefined;
     credentials: string;
+    save: boolean;
 };
 
 const y = yargs(hideBin(process.argv));
@@ -45,7 +46,7 @@ y.command({
             default: "credentials.json",
         },
     },
-    handler: (argv: ArgumentsCamelCase<Options>): void => {
+    handler: (argv: ArgumentsCamelCase<any>): void => {
         if (argv.filename && existsSync(argv.filename)) {
             process.stdout.write(`Uploading ${argv.filename}`);
             readFile(argv.filename, function (err, data) {
