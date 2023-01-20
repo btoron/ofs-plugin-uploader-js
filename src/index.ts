@@ -30,7 +30,11 @@ y.command({
         },
         save: {
             type: "boolean",
-            default: true,
+            default: false,
+        },
+        test: {
+            type: "boolean",
+            default: false,
         },
         savefile: {
             type: "string",
@@ -48,12 +52,16 @@ y.command({
                 const pluginObj: PluginDescription = new PluginDescription();
                 pluginObj.content = data;
                 pluginObj.label = argv.label;
-                var myOFS = new OFS(
-                    JSON.parse(readFileSync(argv.credentials).toString())
-                );
-                myOFS.importPlugins(undefined, pluginObj.xml).then((result) => {
-                    process.stdout.write(JSON.stringify(result));
-                });
+                if (!argv.test) {
+                    var myOFS = new OFS(
+                        JSON.parse(readFileSync(argv.credentials).toString())
+                    );
+                    myOFS
+                        .importPlugins(undefined, pluginObj.xml)
+                        .then((result) => {
+                            process.stdout.write(JSON.stringify(result));
+                        });
+                }
                 if (argv.save && argv.savefile) {
                     writeFileSync(argv.savefile as string, pluginObj.xml);
                 }

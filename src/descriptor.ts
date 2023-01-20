@@ -31,6 +31,16 @@ export class PluginDescription {
                         },
                     },
                 },
+                fields: [
+                    {
+                        field: {
+                            _attributes: {
+                                label: "aid",
+                                entity: "activity",
+                            },
+                        },
+                    },
+                ],
                 plugin_data: {
                     plugin_data_item: {
                         _attributes: {
