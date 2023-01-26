@@ -16,8 +16,14 @@ class PropertiesDescription {
     request: string[] = [];
 }
 
+interface SecuredParamsDescription {
+    name: string;
+    value?: any;
+}
+
 export interface PluginDescription {
     properties?: PropertiesDescription;
+    securedParams?: SecuredParamsDescription[];
 }
 export class Plugin {
     _data = {
@@ -60,7 +66,9 @@ export class Plugin {
                             },
                         ],
                     },
-
+                    secured_params: {
+                        secured_param: [{}],
+                    },
                     plugin_data: {
                         plugin_data_item: {
                             _attributes: {
@@ -91,6 +99,7 @@ export class Plugin {
         },
     };
     private _properties: PropertiesDescription;
+    private _secured_params: string[] = [];
 
     set content(buffer: Buffer) {
         var hash = createHash("sha256");
@@ -132,6 +141,34 @@ export class Plugin {
         }
     }
 
+    add_secured_param(param: SecuredParamsDescription) {
+        if (this._secured_params.includes(param.name)) {
+            process.stderr.write(`...Secured Params: Skipped ${param.name}\n`);
+        } else {
+            process.stderr.write(`...Secured Params: Added ${param.name}\n`);
+            if (this._secured_params.length > 0) {
+                this._data.root.plugins.plugin.secured_params.secured_param.push(
+                    {
+                        _attributes: {
+                            name: param.name,
+                            value: param.value,
+                        },
+                    }
+                );
+            } else {
+                this._data.root.plugins.plugin.secured_params.secured_param = [
+                    {
+                        _attributes: {
+                            name: param.name,
+                            value: param.value,
+                        },
+                    },
+                ];
+            }
+            this._secured_params.push(param.name);
+        }
+    }
+
     constructor(description?: PluginDescription) {
         this._properties = {
             activity: ["aid"],
@@ -148,6 +185,9 @@ export class Plugin {
             });
             description.properties?.inventory?.forEach((element) => {
                 this.add_property(element, OFSEntity.Inventory);
+            });
+            description.securedParams?.forEach((element) => {
+                this.add_secured_param(element);
             });
         }
     }
