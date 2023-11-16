@@ -20,13 +20,13 @@
   "author": "borja.toron@gmail.com",
   "license": "ISC",
   "dependencies": {
-    "@ofs-users/proxy": "^1.0.0",
+    "@ofs-users/proxy": "^1.7.0",
     "xml-js": "^1.6.11",
     "yargs": "^17.6.2"
   },
   "devDependencies": {
-    "@types/node": "^18.11.18",
+    "@types/node": "^20.9.0",
     "@types/yargs": "^17.0.18",
-    "typescript": "^4.9.4"
+    "typescript": "^5.2.2"
   }
 }
