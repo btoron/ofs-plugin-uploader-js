@@ -134,3 +134,5 @@ plugin*.xml
 plugin*.zip
 plugin*.json
 descriptor.json
+.DS_Store
+**/.DS_Store
