@@ -6,12 +6,12 @@ export enum OFSEntity {
     Activity = "activity",
     Inventory = "inventory",
     Request = "request",
-    Resource = "resource",
+    Provider = "provider",
 }
 
 class PropertiesDescription {
     activity: string[] = [];
-    resource: string[] = [];
+    provider: string[] = [];
     inventory: string[] = [];
     request: string[] = [];
 }
@@ -172,7 +172,7 @@ export class Plugin {
     constructor(description?: PluginDescription) {
         this._properties = {
             activity: ["aid"],
-            resource: [],
+            provider: [],
             inventory: [],
             request: [],
         };
@@ -180,8 +180,8 @@ export class Plugin {
             description.properties?.activity?.forEach((element) => {
                 this.add_property(element, OFSEntity.Activity);
             });
-            description.properties?.resource?.forEach((element) => {
-                this.add_property(element, OFSEntity.Resource);
+            description.properties?.provider?.forEach((element) => {
+                this.add_property(element, OFSEntity.Provider);
             });
             description.properties?.inventory?.forEach((element) => {
                 this.add_property(element, OFSEntity.Inventory);
