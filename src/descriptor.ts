@@ -25,79 +25,148 @@ export interface PluginDescription {
     properties?: PropertiesDescription;
     securedParams?: SecuredParamsDescription[];
 }
-export class Plugin {
-    _data = {
-        _declaration: { _attributes: { version: "1.0", encoding: "utf-8" } },
-        root: {
-            format: {
-                _attributes: {
-                    version: 1,
-                },
+
+export interface PluginDefinition {
+    _declaration: { _attributes: { version: string, encoding: string } },
+    root: {
+        format: {
+            _attributes: {
+                version: number,
             },
-            product: {
-                _attributes: {
-                    version: "22.11.1",
-                },
+        },
+        product: {
+            _attributes: {
+                version: string,
             },
-            plugins: {
-                plugin: {
-                    _attributes: {
-                        label: "label",
-                        action_label: "",
-                        action_entity: "",
-                        action_type: "addon_action",
-                        type: "addon",
-                    },
-                    translations: {
-                        translation: {
-                            _attributes: {
-                                lang: "en",
-                                val: "label",
-                            },
+        },
+        plugins: {
+            plugin: {
+                _attributes: {
+                    label: string,
+                    action_label: string,
+                    action_entity: string,
+                    action_type: string,
+                    type: string,
+                },
+                translations: {
+                    translation: {
+                        _attributes: {
+                            lang: string,
+                            val: string,
                         },
                     },
-                    fields: {
-                        field: [
-                            {
-                                _attributes: {
-                                    label: "aid",
-                                    entity: "activity",
-                                },
-                            },
-                        ],
-                    },
-                    secured_params: {
-                        secured_param: [{}],
-                    },
-                    plugin_data: {
-                        plugin_data_item: {
+                },
+                fields: {
+                    field?: any
+                },
+                secured_params: {
+                    secured_param?: any,
+                },
+                plugin_data: {
+                    plugin_data_item: {
+                        _attributes: {
+                            path: string,
+                            post_data: string,
+                            width: string,
+                            height: string,
+                            options: string,
+                            user_agent_mask: string,
+                            sort_order: number,
+                            native_app_label: string,
+                            auth_type: string,
+                            auth_login: string,
+                        },
+                        hosted_plugin_data: {
                             _attributes: {
-                                path: "",
-                                post_data: "",
-                                width: "",
-                                height: "",
-                                options: "32",
-                                user_agent_mask: "",
-                                sort_order: 0,
-                                native_app_label: "",
-                                auth_type: "",
-                                auth_login: "",
+                                name: string,
+                                content_hash: string,
                             },
-                            hosted_plugin_data: {
-                                _attributes: {
-                                    name: "label_name",
-                                    content_hash: "hash",
-                                },
-                                content: {
-                                    _cdata: "NONE",
-                                },
+                            content: {
+                                _cdata: string,
                             },
                         },
                     },
                 },
             },
         },
-    };
+    },
+};
+
+const defaultPluginValues = {
+    _declaration: { _attributes: { version: "1.0", encoding: "utf-8" } },
+    root: {
+        format: {
+            _attributes: {
+                version: 1,
+            },
+        },
+        product: {
+            _attributes: {
+                version: "22.11.1",
+            },
+        },
+        plugins: {
+            plugin: {
+                _attributes: {
+                    label: "label",
+                    action_label: "",
+                    action_entity: "",
+                    action_type: "addon_action",
+                    type: "addon",
+                },
+                translations: {
+                    translation: {
+                        _attributes: {
+                            lang: "en",
+                            val: "label",
+                        },
+                    },
+                },
+                fields: {
+                    field: [
+                        {
+                            _attributes: {
+                                label: "aid",
+                                entity: "activity",
+                            },
+                        },
+                    ],
+                },
+                secured_params: {
+                },
+                plugin_data: {
+                    plugin_data_item: {
+                        _attributes: {
+                            path: "",
+                            post_data: "",
+                            width: "",
+                            height: "",
+                            options: "32",
+                            user_agent_mask: "",
+                            sort_order: 0,
+                            native_app_label: "",
+                            auth_type: "",
+                            auth_login: "",
+                        },
+                        hosted_plugin_data: {
+                            _attributes: {
+                                name: "label_name",
+                                content_hash: "hash",
+                            },
+                            content: {
+                                _cdata: "NONE",
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    },
+};
+
+export class Plugin {
+
+    private _data: PluginDefinition = { ...defaultPluginValues }
     private _properties: PropertiesDescription;
     private _secured_params: string[] = [];
 
@@ -186,9 +255,14 @@ export class Plugin {
             description.properties?.inventory?.forEach((element) => {
                 this.add_property(element, OFSEntity.Inventory);
             });
-            description.securedParams?.forEach((element) => {
-                this.add_secured_param(element);
-            });
+            if (description.securedParams) {
+                description.securedParams?.forEach((element) => {
+                    this.add_secured_param(element);
+                });
+            } else {
+                // Remove securedParams section
+                this._data.root.plugins.plugin.secured_params = {}
+            }
         }
     }
 }
