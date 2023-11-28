@@ -21,6 +21,7 @@
   "license": "ISC",
   "dependencies": {
     "@ofs-users/proxy": "^1.8.2",
+    "winston": "^3.11.0",
     "xml-js": "^1.6.11",
     "yargs": "^17.6.2"
   },

@@ -14,6 +14,7 @@ import { hideBin } from "yargs/helpers";
 import { DescriptorJSON, DescriptorXML } from "./converter.js";
 import { OFSEntity, Plugin } from "./plugin.js";
 import { PluginDescription, PropertyDetails } from "./descriptor.js";
+import { Logger } from "./logging.js";
 
 type Options = {
     label: string;
@@ -57,6 +58,7 @@ y.command({
         },
     },
     handler: async (argv: ArgumentsCamelCase<any>): Promise<void> => {
+        let logger = Logger.buildLogger();
         // Check if there is a credentials file
         if (existsSync(argv.credentials)) {
             myOFS = new OFS(
@@ -74,10 +76,10 @@ y.command({
             if (argv.validate) {
                 let result = await descriptor.validate().then((result) => {
                     if (!result) {
-                        console.error("Validation failed");
+                        logger.error("Validation failed");
                         process.exit(1);
                     } else {
-                        console.info(`Validation OK ${result}`);
+                        logger.info(`Validation OK ${result}`);
                     }
                 });
             }
