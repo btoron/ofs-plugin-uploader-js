@@ -2,6 +2,7 @@
 
 import { OFS } from "@ofs-users/proxy";
 import {
+    exists,
     existsSync,
     readFile,
     readFileSync,
@@ -68,10 +69,18 @@ y.command({
         // Check if there is a descriptor file
         var descriptor: PluginDescription;
         if (existsSync(argv.descriptorFile)) {
-            descriptor = JSON.parse(
-                readFileSync(argv.descriptorFile).toString()
-            );
-            descriptor.propertyValidator = validateProperty;
+            descriptor = PluginDescription.load(argv.descriptorFile);
+            descriptor.instance = myOFS;
+            if (argv.validate) {
+                let result = await descriptor.validate().then((result) => {
+                    if (!result) {
+                        console.error("Validation failed");
+                        process.exit(1);
+                    } else {
+                        console.info(`Validation OK ${result}`);
+                    }
+                });
+            }
         } else {
             console.error(`Descriptor file ${argv.descriptorFile} not found`);
             process.exit(1);
@@ -152,36 +161,3 @@ y.command({
 });
 
 y.parse(process.argv.slice(2));
-
-async function validateProperty(
-    element: string | PropertyDetails,
-    entity: OFSEntity
-): Promise<boolean> {
-    let label: string | undefined = undefined;
-    if (typeof element === "string") {
-        label = element;
-    } else if (typeof element === "object" && element.label) {
-        label = element.label;
-    }
-
-    if (!label) {
-        console.warn(
-            `...Properties: Validation..Skipped unknown type ${typeof element}`
-        );
-        return false;
-    } else {
-        let result = await myOFS.getPropertyDetails(label);
-        if (result.status === 200) {
-            console.log(`...Properties: Validation..${label} exists`);
-            return true;
-        } else if (result.status === 404) {
-            console.warn(`...Properties: Validation..${label} does not exist`);
-            return false;
-        } else {
-            console.warn(
-                `...Properties: Validation..${label} unknown error: ${result.description}`
-            );
-            return false;
-        }
-    }
-}
