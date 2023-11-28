@@ -11,12 +11,8 @@ import {
 import yargs, { ArgumentsCamelCase } from "yargs";
 import { hideBin } from "yargs/helpers";
 import { DescriptorJSON, DescriptorXML } from "./converter.js";
-import {
-    OFSEntity,
-    Plugin,
-    PluginDescription,
-    PropertyDetails,
-} from "./descriptor.js";
+import { OFSEntity, Plugin } from "./plugin.js";
+import { PluginDescription, PropertyDetails } from "./descriptor.js";
 
 type Options = {
     label: string;
@@ -25,7 +21,7 @@ type Options = {
 };
 
 const y = yargs(hideBin(process.argv));
-
+var myOFS: OFS;
 y.command({
     command: "upload <label>",
     describe: "Upload plugin",
@@ -62,13 +58,11 @@ y.command({
     handler: async (argv: ArgumentsCamelCase<any>): Promise<void> => {
         // Check if there is a credentials file
         if (existsSync(argv.credentials)) {
-            var myOFS = new OFS(
+            myOFS = new OFS(
                 JSON.parse(readFileSync(argv.credentials).toString())
             );
         } else {
-            process.stderr.write(
-                `Credentials file ${argv.credentials} not found\n`
-            );
+            console.error(`Credentials file ${argv.credentials} not found`);
             process.exit(1);
         }
         // Check if there is a descriptor file
@@ -77,18 +71,10 @@ y.command({
             descriptor = JSON.parse(
                 readFileSync(argv.descriptorFile).toString()
             );
+            descriptor.propertyValidator = validateProperty;
         } else {
-            process.stderr.write(
-                `Descriptor file ${argv.descriptorFile} not found\n`
-            );
+            console.error(`Descriptor file ${argv.descriptorFile} not found`);
             process.exit(1);
-        }
-        // Validate existence of descriptor properties
-        if (argv.validate) {
-            descriptor.properties?.activity.forEach((element) => {
-                let entity = OFSEntity.Activity;
-                validateProperty(element, entity, myOFS);
-            });
         }
 
         if (argv.filename && existsSync(argv.filename)) {
@@ -169,9 +155,8 @@ y.parse(process.argv.slice(2));
 
 async function validateProperty(
     element: string | PropertyDetails,
-    entity: OFSEntity,
-    myOFS: OFS
-) {
+    entity: OFSEntity
+): Promise<boolean> {
     let label: string | undefined = undefined;
     if (typeof element === "string") {
         label = element;
@@ -183,13 +168,20 @@ async function validateProperty(
         console.warn(
             `...Properties: Validation..Skipped unknown type ${typeof element}`
         );
+        return false;
     } else {
         let result = await myOFS.getPropertyDetails(label);
         if (result.status === 200) {
             console.log(`...Properties: Validation..${label} exists`);
-        } else {
+            return true;
+        } else if (result.status === 404) {
             console.warn(`...Properties: Validation..${label} does not exist`);
+            return false;
+        } else {
+            console.warn(
+                `...Properties: Validation..${label} unknown error: ${result.description}`
+            );
+            return false;
         }
     }
-    return label;
 }
