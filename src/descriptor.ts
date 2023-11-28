@@ -2,7 +2,7 @@ import { OFSPropertyDetails, OFS } from "@ofs-users/proxy";
 import { OFSEntity } from "./plugin.js";
 import { PathOrFileDescriptor, readFileSync } from "fs";
 import { type } from "os";
-import { Logger } from "./logging.js";
+import { defaultLogger } from "./logging.js";
 
 export class PropertyDetails implements OFSPropertyDetails {
     label: string;
@@ -47,7 +47,7 @@ export class PluginDescription implements PluginDescriptionInterface {
 
     async validate(): Promise<boolean> {
         let valid = true;
-        Logger.buildLogger().info("Validating properties");
+        defaultLogger.info("Validating properties");
         if (this.properties.activity)
             for (const property of this.properties.activity) {
                 let validationResult = await this.validateProperty(
@@ -87,7 +87,6 @@ export class PluginDescription implements PluginDescriptionInterface {
         element: string | PropertyDetails,
         entity: OFSEntity
     ): Promise<boolean> {
-        let defaultLogger = Logger.buildLogger();
         let label: string | undefined = undefined;
         if (typeof element === "string") {
             label = element;

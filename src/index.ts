@@ -14,7 +14,7 @@ import { hideBin } from "yargs/helpers";
 import { DescriptorJSON, DescriptorXML } from "./converter.js";
 import { OFSEntity, Plugin } from "./plugin.js";
 import { PluginDescription, PropertyDetails } from "./descriptor.js";
-import { Logger } from "./logging.js";
+import { defaultLogger } from "./logging.js";
 
 type Options = {
     label: string;
@@ -56,9 +56,16 @@ y.command({
             type: "boolean",
             default: false,
         },
+        verbose: {
+            type: "boolean",
+            default: false,
+        },
     },
     handler: async (argv: ArgumentsCamelCase<any>): Promise<void> => {
-        let logger = Logger.buildLogger();
+        let logger = defaultLogger;
+        if (argv.verbose) {
+            logger.level = "info";
+        }
         // Check if there is a credentials file
         if (existsSync(argv.credentials)) {
             myOFS = new OFS(

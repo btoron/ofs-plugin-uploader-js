@@ -10,9 +10,20 @@ export class Logger {
         this._logger = Logger.buildLogger();
     }
 
+    static getInstance(): Logger {
+        if (!Logger._instance) {
+            Logger._instance = new Logger();
+        }
+        return Logger._instance;
+    }
+
+    get logger(): winston.Logger {
+        return this._logger;
+    }
+
     static buildLogger(): winston.Logger {
         let _logger = winston.createLogger({
-            level: "info",
+            level: "warn",
             format: winston.format.combine(
                 winston.format.label({ label: "worker" }),
                 winston.format.timestamp({
@@ -23,6 +34,7 @@ export class Logger {
             transports: [
                 new winston.transports.Console({
                     format: winston.format.combine(
+                        winston.format.padLevels(),
                         winston.format.colorize(),
                         winston.format.printf(
                             (info) =>
@@ -36,4 +48,4 @@ export class Logger {
     }
 }
 
-export var defaultLogger = Logger.buildLogger();
+export var defaultLogger = Logger.getInstance().logger;
