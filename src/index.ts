@@ -49,6 +49,10 @@ y.command({
             type: "string",
             default: "descriptor.json",
         },
+        validate: {
+            type: "boolean",
+            default: false,
+        },
     },
     handler: (argv: ArgumentsCamelCase<any>): void => {
         // Check if there is a descriptor file

@@ -20,7 +20,7 @@
   "author": "borja.toron@gmail.com",
   "license": "ISC",
   "dependencies": {
-    "@ofs-users/proxy": "^1.7.0",
+    "@ofs-users/proxy": "^1.8.1",
     "xml-js": "^1.6.11",
     "yargs": "^17.6.2"
   },
