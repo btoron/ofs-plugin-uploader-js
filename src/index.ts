@@ -11,7 +11,12 @@ import {
 import yargs, { ArgumentsCamelCase } from "yargs";
 import { hideBin } from "yargs/helpers";
 import { DescriptorJSON, DescriptorXML } from "./converter.js";
-import { OFSEntity, Plugin, PluginDescription } from "./descriptor.js";
+import {
+    OFSEntity,
+    Plugin,
+    PluginDescription,
+    PropertyDetails,
+} from "./descriptor.js";
 
 type Options = {
     label: string;
@@ -54,24 +59,46 @@ y.command({
             default: false,
         },
     },
-    handler: (argv: ArgumentsCamelCase<any>): void => {
+    handler: async (argv: ArgumentsCamelCase<any>): Promise<void> => {
+        // Check if there is a credentials file
+        if (existsSync(argv.credentials)) {
+            var myOFS = new OFS(
+                JSON.parse(readFileSync(argv.credentials).toString())
+            );
+        } else {
+            process.stderr.write(
+                `Credentials file ${argv.credentials} not found\n`
+            );
+            process.exit(1);
+        }
         // Check if there is a descriptor file
-        var descriptor: PluginDescription = {};
+        var descriptor: PluginDescription;
         if (existsSync(argv.descriptorFile)) {
             descriptor = JSON.parse(
                 readFileSync(argv.descriptorFile).toString()
             );
+        } else {
+            process.stderr.write(
+                `Descriptor file ${argv.descriptorFile} not found\n`
+            );
+            process.exit(1);
         }
+        // Validate existence of descriptor properties
+        if (argv.validate) {
+            descriptor.properties?.activity.forEach((element) => {
+                let entity = OFSEntity.Activity;
+                validateProperty(element, entity, myOFS);
+            });
+        }
+
         if (argv.filename && existsSync(argv.filename)) {
-            process.stderr.write(`Uploading ${argv.filename}\n`);
+            console.info(`Uploading ${argv.filename}`);
             readFile(argv.filename, function (err, data) {
                 const pluginObj: Plugin = new Plugin(descriptor);
                 pluginObj.content = data;
                 pluginObj.label = argv.label;
+
                 if (!argv.test) {
-                    var myOFS = new OFS(
-                        JSON.parse(readFileSync(argv.credentials).toString())
-                    );
                     myOFS
                         .importPlugins(undefined, pluginObj.xml)
                         .then((result) => {
@@ -139,3 +166,30 @@ y.command({
 });
 
 y.parse(process.argv.slice(2));
+
+async function validateProperty(
+    element: string | PropertyDetails,
+    entity: OFSEntity,
+    myOFS: OFS
+) {
+    let label: string | undefined = undefined;
+    if (typeof element === "string") {
+        label = element;
+    } else if (typeof element === "object" && element.label) {
+        label = element.label;
+    }
+
+    if (!label) {
+        console.warn(
+            `...Properties: Validation..Skipped unknown type ${typeof element}`
+        );
+    } else {
+        let result = await myOFS.getPropertyDetails(label);
+        if (result.status === 200) {
+            console.log(`...Properties: Validation..${label} exists`);
+        } else {
+            console.warn(`...Properties: Validation..${label} does not exist`);
+        }
+    }
+    return label;
+}

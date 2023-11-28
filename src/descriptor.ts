@@ -9,11 +9,21 @@ export enum OFSEntity {
     Provider = "provider",
 }
 
+import { OFSPropertyDetails } from "@ofs-users/proxy";
+
+export class PropertyDetails implements OFSPropertyDetails {
+    label: string;
+    type: string;
+    constructor(label: string, type: string) {
+        this.label = label;
+        this.type = type;
+    }
+}
 class PropertiesDescription {
-    activity: string[] = [];
-    provider: string[] = [];
-    inventory: string[] = [];
-    request: string[] = [];
+    activity: (string | PropertyDetails)[] = [];
+    provider: (string | PropertyDetails)[] = [];
+    inventory: (string | PropertyDetails)[] = [];
+    request: (string | PropertyDetails)[] = [];
 }
 
 interface SecuredParamsDescription {
@@ -21,76 +31,93 @@ interface SecuredParamsDescription {
     value?: any;
 }
 
-export interface PluginDescription {
+interface PluginDescriptionInterface {
     properties?: PropertiesDescription;
     securedParams?: SecuredParamsDescription[];
 }
 
+export class PluginDescription implements PluginDescriptionInterface {
+    properties?: PropertiesDescription;
+    securedParams?: SecuredParamsDescription[];
+    _propertyValidator?: CallableFunction = undefined;
+    constructor(properties?: PropertiesDescription) {
+        this.properties = properties;
+    }
+
+    set propertyValidator(validator: CallableFunction) {
+        this._propertyValidator = validator;
+    }
+
+    get propertyValidator(): CallableFunction | undefined {
+        return this._propertyValidator;
+    }
+}
+
 export interface PluginDefinition {
-    _declaration: { _attributes: { version: string, encoding: string } },
+    _declaration: { _attributes: { version: string; encoding: string } };
     root: {
         format: {
             _attributes: {
-                version: number,
-            },
-        },
+                version: number;
+            };
+        };
         product: {
             _attributes: {
-                version: string,
-            },
-        },
+                version: string;
+            };
+        };
         plugins: {
             plugin: {
                 _attributes: {
-                    label: string,
-                    action_label: string,
-                    action_entity: string,
-                    action_type: string,
-                    type: string,
-                },
+                    label: string;
+                    action_label: string;
+                    action_entity: string;
+                    action_type: string;
+                    type: string;
+                };
                 translations: {
                     translation: {
                         _attributes: {
-                            lang: string,
-                            val: string,
-                        },
-                    },
-                },
+                            lang: string;
+                            val: string;
+                        };
+                    };
+                };
                 fields: {
-                    field?: any
-                },
+                    field?: any;
+                };
                 secured_params: {
-                    secured_param?: any,
-                },
+                    secured_param?: any;
+                };
                 plugin_data: {
                     plugin_data_item: {
                         _attributes: {
-                            path: string,
-                            post_data: string,
-                            width: string,
-                            height: string,
-                            options: string,
-                            user_agent_mask: string,
-                            sort_order: number,
-                            native_app_label: string,
-                            auth_type: string,
-                            auth_login: string,
-                        },
+                            path: string;
+                            post_data: string;
+                            width: string;
+                            height: string;
+                            options: string;
+                            user_agent_mask: string;
+                            sort_order: number;
+                            native_app_label: string;
+                            auth_type: string;
+                            auth_login: string;
+                        };
                         hosted_plugin_data: {
                             _attributes: {
-                                name: string,
-                                content_hash: string,
-                            },
+                                name: string;
+                                content_hash: string;
+                            };
                             content: {
-                                _cdata: string,
-                            },
-                        },
-                    },
-                },
-            },
-        },
-    },
-};
+                                _cdata: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+    };
+}
 
 const defaultPluginValues = {
     _declaration: { _attributes: { version: "1.0", encoding: "utf-8" } },
@@ -132,8 +159,7 @@ const defaultPluginValues = {
                         },
                     ],
                 },
-                secured_params: {
-                },
+                secured_params: {},
                 plugin_data: {
                     plugin_data_item: {
                         _attributes: {
@@ -165,8 +191,7 @@ const defaultPluginValues = {
 };
 
 export class Plugin {
-
-    private _data: PluginDefinition = { ...defaultPluginValues }
+    private _data: PluginDefinition = { ...defaultPluginValues };
     private _properties: PropertiesDescription;
     private _secured_params: string[] = [];
 
@@ -195,11 +220,11 @@ export class Plugin {
 
     add_property(label: string, entity: OFSEntity) {
         if (this._properties[entity].includes(label)) {
-            process.stderr.write(
-                `...Properties: Skipped ${entity}.${label}. Duplicated\n`
+            console.warn(
+                `...Properties: Skipped ${entity}.${label}. Duplicated`
             );
         } else {
-            process.stderr.write(`...Properties: Added ${entity}.${label}\n`);
+            console.log(`...Properties: Added ${entity}.${label}`);
             this._data.root.plugins.plugin.fields.field.push({
                 _attributes: {
                     label: label,
@@ -212,9 +237,9 @@ export class Plugin {
 
     add_secured_param(param: SecuredParamsDescription) {
         if (this._secured_params.includes(param.name)) {
-            process.stderr.write(`...Secured Params: Skipped ${param.name}\n`);
+            console.warn(`...Secured Params: Skipped ${param.name}`);
         } else {
-            process.stderr.write(`...Secured Params: Added ${param.name}\n`);
+            console.log(`...Secured Params: Added ${param.name}`);
             if (this._secured_params.length > 0) {
                 this._data.root.plugins.plugin.secured_params.secured_param.push(
                     {
@@ -238,7 +263,7 @@ export class Plugin {
         }
     }
 
-    constructor(description?: PluginDescription) {
+    constructor(description?: PluginDescription, validate: boolean = false) {
         this._properties = {
             activity: ["aid"],
             provider: [],
@@ -247,13 +272,33 @@ export class Plugin {
         };
         if (description) {
             description.properties?.activity?.forEach((element) => {
-                this.add_property(element, OFSEntity.Activity);
+                if (typeof element === "string") {
+                    this.add_property(element, OFSEntity.Activity);
+                } else if (typeof element === "object") {
+                    if (element.label) {
+                        this.add_property(element.label, OFSEntity.Activity);
+                    } else {
+                        console.warn(
+                            "...Properties:..Skipped activity property without label"
+                        );
+                    }
+                } else {
+                    console.warn("..Skipped unknown type");
+                }
             });
             description.properties?.provider?.forEach((element) => {
-                this.add_property(element, OFSEntity.Provider);
+                if (typeof element === "string") {
+                    this.add_property(element, OFSEntity.Provider);
+                } else {
+                    console.warn(
+                        `Skipped ${element} of type ${typeof element}`
+                    );
+                }
             });
             description.properties?.inventory?.forEach((element) => {
-                this.add_property(element, OFSEntity.Inventory);
+                if (typeof element === "string") {
+                    this.add_property(element, OFSEntity.Inventory);
+                }
             });
             if (description.securedParams) {
                 description.securedParams?.forEach((element) => {
@@ -261,7 +306,7 @@ export class Plugin {
                 });
             } else {
                 // Remove securedParams section
-                this._data.root.plugins.plugin.secured_params = {}
+                this._data.root.plugins.plugin.secured_params = {};
             }
         }
     }
