@@ -6,7 +6,6 @@ export class Logger {
     static _instance: Logger;
     _logger: winston.Logger;
     constructor() {
-        console.error("Creating logger");
         this._logger = Logger.buildLogger();
     }
 

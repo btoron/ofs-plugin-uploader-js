@@ -26,39 +26,53 @@ const y = yargs(hideBin(process.argv));
 var myOFS: OFS;
 y.command({
     command: "upload <label>",
-    describe: "Upload plugin",
+    describe:
+        "Utilitiy to upload a plugin to an OFS instance with the label <label>",
     builder: {
         filename: {
             type: "string",
             default: "plugin.zip",
+            describe: "Plugin file",
         },
         save: {
             type: "boolean",
             default: false,
+            describe: "Save the plugin description to a file",
         },
         test: {
             type: "boolean",
             default: false,
+            describe: "Do not upload the plugin",
         },
         savefile: {
             type: "string",
             default: "plugin.xml",
+            describe: "Save the plugin description to a file",
         },
         credentials: {
             type: "string",
             default: "credentials.json",
+            describe: "Credentials file",
         },
         descriptorFile: {
             type: "string",
             default: "descriptor.json",
+            describe: "Descriptor file",
         },
         validate: {
             type: "boolean",
             default: false,
+            describe: "Validate the descriptor file",
+        },
+        createProperties: {
+            type: "boolean",
+            default: false,
+            describe: "Create properties in the instance",
         },
         verbose: {
             type: "boolean",
             default: false,
+            describe: "Verbose output",
         },
     },
     handler: async (argv: ArgumentsCamelCase<any>): Promise<void> => {
