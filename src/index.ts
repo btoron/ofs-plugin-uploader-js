@@ -74,11 +74,19 @@ y.command({
             default: false,
             describe: "Verbose output",
         },
+        debug: {
+            type: "boolean",
+            default: false,
+            describe: "Debug output",
+        },
     },
     handler: async (argv: ArgumentsCamelCase<any>): Promise<void> => {
         let logger = defaultLogger;
         if (argv.verbose) {
             logger.level = "info";
+        }
+        if (argv.debug) {
+            logger.level = "debug";
         }
         // Check if there is a credentials file
         if (existsSync(argv.credentials)) {
@@ -94,15 +102,18 @@ y.command({
         if (existsSync(argv.descriptorFile)) {
             descriptor = PluginDescription.load(argv.descriptorFile);
             descriptor.instance = myOFS;
-            if (argv.validate) {
-                let result = await descriptor.validate().then((result) => {
-                    if (!result) {
-                        logger.error("Validation failed");
-                        process.exit(1);
-                    } else {
-                        logger.info(`Validation OK ${result}`);
-                    }
-                });
+            if (argv.validate || argv.createProperties) {
+                //
+                let result = await descriptor
+                    .validate(argv.createProperties)
+                    .then((result) => {
+                        if (!result) {
+                            logger.error("Validation failed");
+                            process.exit(1);
+                        } else {
+                            logger.info(`Validation OK ${result}`);
+                        }
+                    });
             }
         } else {
             console.error(`Descriptor file ${argv.descriptorFile} not found`);
