@@ -2,6 +2,7 @@ import { throws } from "assert";
 import { Console } from "console";
 import { createHash } from "crypto";
 import { json2xml } from "xml-js";
+import { defaultLogger } from "./logging.js";
 export enum OFSEntity {
     Activity = "activity",
     Inventory = "inventory",
@@ -187,11 +188,11 @@ export class Plugin {
 
     add_property(label: string, entity: OFSEntity) {
         if (this._properties[entity].includes(label)) {
-            console.warn(
+            defaultLogger.warn(
                 `...Properties: Skipped ${entity}.${label}. Duplicated`
             );
         } else {
-            console.log(`...Properties: Added ${entity}.${label}`);
+            defaultLogger.info(`...Properties: Added ${entity}.${label}`);
             this._data.root.plugins.plugin.fields.field.push({
                 _attributes: {
                     label: label,
@@ -204,9 +205,9 @@ export class Plugin {
 
     add_secured_param(param: SecuredParamsDescription) {
         if (this._secured_params.includes(param.name)) {
-            console.warn(`...Secured Params: Skipped ${param.name}`);
+            defaultLogger.warn(`...Secured Params: Skipped ${param.name}`);
         } else {
-            console.log(`...Secured Params: Added ${param.name}`);
+            defaultLogger.info(`...Secured Params: Added ${param.name}`);
             if (this._secured_params.length > 0) {
                 this._data.root.plugins.plugin.secured_params.secured_param.push(
                     {
@@ -239,19 +240,19 @@ export class Plugin {
                     if (element.label) {
                         this.add_property(element.label, OFSEntity.Activity);
                     } else {
-                        console.warn(
+                        defaultLogger.warn(
                             "...Properties:..Skipped activity property without label"
                         );
                     }
                 } else {
-                    console.warn("..Skipped unknown type");
+                    defaultLogger.warn("..Skipped unknown type");
                 }
             });
             description.properties?.provider?.forEach((element) => {
                 if (typeof element === "string") {
                     this.add_property(element, OFSEntity.Provider);
                 } else {
-                    console.warn(
+                    defaultLogger.warn(
                         `Skipped ${element} of type ${typeof element}`
                     );
                 }

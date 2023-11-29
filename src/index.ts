@@ -94,7 +94,9 @@ y.command({
                 JSON.parse(readFileSync(argv.credentials).toString())
             );
         } else {
-            console.error(`Credentials file ${argv.credentials} not found`);
+            defaultLogger.error(
+                `Credentials file ${argv.credentials} not found`
+            );
             process.exit(1);
         }
         // Check if there is a descriptor file
@@ -116,12 +118,14 @@ y.command({
                     });
             }
         } else {
-            console.error(`Descriptor file ${argv.descriptorFile} not found`);
+            defaultLogger.error(
+                `Descriptor file ${argv.descriptorFile} not found`
+            );
             process.exit(1);
         }
 
         if (argv.filename && existsSync(argv.filename)) {
-            console.info(`Uploading ${argv.filename}`);
+            defaultLogger.info(`Uploading ${argv.filename}`);
             readFile(argv.filename, function (err, data) {
                 const pluginObj: Plugin = new Plugin(descriptor);
                 pluginObj.content = data;
@@ -131,15 +135,20 @@ y.command({
                     myOFS
                         .importPlugins(undefined, pluginObj.xml)
                         .then((result) => {
-                            process.stdout.write(JSON.stringify(result));
+                            if (result.status == 204) {
+                                defaultLogger.info("Upload OK");
+                            } else {
+                                defaultLogger.error(JSON.stringify(result));
+                            }
                         });
                 }
                 if (argv.save && argv.savefile) {
+                    defaultLogger.info(`Saving ${argv.savefile}`);
                     writeFileSync(argv.savefile as string, pluginObj.xml);
                 }
             });
         } else {
-            process.stderr.write(`${argv.filename} not found`);
+            defaultLogger.error(`${argv.filename} not found`);
         }
     },
 });
