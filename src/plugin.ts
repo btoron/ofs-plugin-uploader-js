@@ -1,5 +1,3 @@
-import { throws } from "assert";
-import { Console } from "console";
 import { createHash } from "crypto";
 import { json2xml } from "xml-js";
 import { defaultLogger } from "./logging.js";
