@@ -1,26 +1,13 @@
 #!/usr/bin/env node
 
 import { OFS } from "@ofs-users/proxy";
-import {
-    exists,
-    existsSync,
-    readFile,
-    readFileSync,
-    writeFile,
-    writeFileSync,
-} from "fs";
+import { existsSync, readFile, readFileSync, writeFileSync } from "fs";
 import yargs, { ArgumentsCamelCase } from "yargs";
 import { hideBin } from "yargs/helpers";
 import { DescriptorJSON, DescriptorXML } from "./converter.js";
-import { OFSEntity, Plugin } from "./plugin.js";
-import { PluginDescription, PropertyDetails } from "./descriptor.js";
+import { Plugin } from "./plugin.js";
+import { PluginDescription } from "./descriptor.js";
 import { defaultLogger } from "./logging.js";
-
-type Options = {
-    label: string;
-    filename: string | undefined;
-    credentials: string;
-};
 
 const y = yargs(hideBin(process.argv));
 var myOFS: OFS;
