@@ -1,7 +1,6 @@
 import { OFSPropertyDetails, OFS, OFSTranslation } from "@ofs-users/proxy";
 import { OFSEntity } from "./plugin.js";
 import { PathOrFileDescriptor, readFileSync } from "fs";
-import { type } from "os";
 import { defaultLogger } from "./logging.js";
 
 export class PropertyDetails implements OFSPropertyDetails {
@@ -62,11 +61,15 @@ export class PluginDescription implements PluginDescriptionInterface {
     async validate(createProperties: boolean = false): Promise<boolean> {
         let valid = true;
         defaultLogger.info("Validating properties");
-        if (this.properties.activity)
-            for (const property of this.properties.activity) {
+
+        const validateProperties = async (
+            properties: (string | PropertyDetails)[],
+            entity: OFSEntity
+        ) => {
+            for (const property of properties) {
                 let validationResult = await this.validateProperty(
                     property,
-                    OFSEntity.Activity,
+                    entity,
                     createProperties
                 );
                 defaultLogger.debug(
@@ -74,33 +77,33 @@ export class PluginDescription implements PluginDescriptionInterface {
                 );
                 valid = valid && validationResult;
             }
-        if (this.properties.provider)
-            for (const property of this.properties.provider) {
-                let validationResult = await this.validateProperty(
-                    property,
-                    OFSEntity.Provider,
-                    createProperties
-                );
-                valid = valid && validationResult;
-            }
-        if (this.properties.inventory)
-            for (const property of this.properties.inventory) {
-                let validationResult = await this.validateProperty(
-                    property,
-                    OFSEntity.Inventory,
-                    createProperties
-                );
-                valid = valid && validationResult;
-            }
-        if (this.properties.request)
-            for (const property of this.properties.request) {
-                let validationResult = await this.validateProperty(
-                    property,
-                    OFSEntity.Request,
-                    createProperties
-                );
-                valid = valid && validationResult;
-            }
+        };
+
+        if (this.properties.activity) {
+            await validateProperties(
+                this.properties.activity,
+                OFSEntity.Activity
+            );
+        }
+        if (this.properties.provider) {
+            await validateProperties(
+                this.properties.provider,
+                OFSEntity.Provider
+            );
+        }
+        if (this.properties.inventory) {
+            await validateProperties(
+                this.properties.inventory,
+                OFSEntity.Inventory
+            );
+        }
+        if (this.properties.request) {
+            await validateProperties(
+                this.properties.request,
+                OFSEntity.Request
+            );
+        }
+
         return valid;
     }
 
@@ -169,18 +172,19 @@ export class PluginDescription implements PluginDescriptionInterface {
     }
 
     async createProperty(property: PropertyDetails): Promise<boolean> {
-        if (
-            property.entity &&
-            property.label &&
-            property.type &&
-            property.name &&
-            property.translations &&
-            property.translations.length > 0 &&
-            property.translations[0].language &&
-            property.translations[0].name &&
-            property.translations[0].languageISO &&
-            property.gui
-        ) {
+        const requiredFields = [
+            "entity",
+            "label",
+            "type",
+            "name",
+            "translations",
+            "gui",
+        ];
+
+        const missingFields = requiredFields.filter(
+            (field) => !property.hasOwnProperty(field)
+        );
+        if (missingFields.length === 0) {
             let result = await this.instance.createReplaceProperty(property);
             if (result.status === 201) {
                 defaultLogger.warn(
@@ -206,7 +210,7 @@ export class PluginDescription implements PluginDescriptionInterface {
             defaultLogger.warn(
                 `...Creation: Properties: ${
                     property.label
-                } incomplete property: ${JSON.stringify(property, null, 2)}`
+                } missing fields: ${missingFields.join(", ")}`
             );
             return false; // 4: Incomplete property
         }
